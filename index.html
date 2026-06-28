@@ -43,8 +43,8 @@
   @media (min-width:900px){
     .app{ max-width:min(94vw,1000px); }
 
-    /* MENU — brand & progress left, navigation right */
-    #menu{
+    /* MENU — brand & progress left, navigation right (only when shown, so it never leaks onto other screens) */
+    #menu.show{
       display:grid; overflow:hidden;
       grid-template-columns:1.05fr 1fr;
       grid-template-rows:auto auto auto 1fr auto;
@@ -69,10 +69,9 @@
     }
     #deck .qlabel{grid-column:1; grid-row:1}
     #deck .q{grid-column:1; grid-row:2}
-    #deck .arrow{grid-column:1; grid-row:3; transform:rotate(-90deg)}
-    #deck .flipped .arrow{transform:rotate(-90deg)}
+    #deck .revealbtn{grid-column:1; grid-row:3; justify-self:start}
     #deck .taphint{grid-column:1; grid-row:4}
-    #deck .reveal{grid-column:2; grid-row:1 / -1; align-self:center; max-height:none !important; overflow:visible; visibility:hidden}
+    #deck .reveal{grid-column:2; grid-row:1 / -1; align-self:center; margin-top:0; max-height:none !important; overflow:visible; visibility:hidden}
     #deck .flipped .reveal{visibility:visible}
 
     /* PANEL — tips in two readable columns */
@@ -177,16 +176,21 @@
   .deck-prog i{display:block; height:100%; background:var(--navy); border-radius:99px; transition:width .35s ease}
   .whisper{font-size:12px; font-weight:500; color:var(--muted); min-height:16px; margin:8px 0 -4px; transition:opacity .3s; letter-spacing:0}
 
-  .cardbody{flex:1; display:flex; flex-direction:column; justify-content:center; overflow-y:auto; padding:clamp(14px,4vw,26px) 0; -ms-overflow-style:none; scrollbar-width:none}
+  .cardbody{flex:1; min-height:0; display:flex; flex-direction:column; justify-content:center; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:clamp(14px,4vw,26px) 0; -ms-overflow-style:none; scrollbar-width:none}
   .cardbody::-webkit-scrollbar{display:none}
+  /* once flipped, top-align so the FULL answer + tip is always scrollable (never clipped) */
+  #dWrap.flipped{justify-content:flex-start}
   .qlabel{font-size:11.5px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:clamp(12px,3.5vw,18px)}
   .q{font-size:clamp(25px,6.6vw,38px); font-weight:800; letter-spacing:-.035em; line-height:1.13; cursor:pointer; color:var(--navy)}
-  .arrow{font-size:clamp(28px,8vw,38px); font-weight:800; margin:clamp(18px,5vw,28px) 0 4px; color:var(--navy); transition:.25s; cursor:pointer; width:1em}
-  .flipped .arrow{transform:rotate(180deg); color:var(--faint)}
+  .revealbtn{align-self:flex-start; margin-top:clamp(18px,5vw,28px); background:var(--navy); color:#fff; border:none; border-radius:13px; padding:14px 24px; font-size:clamp(15px,4vw,17px); font-weight:800; letter-spacing:-.01em; cursor:pointer; transition:transform .1s ease, background .12s}
+  .revealbtn:active{transform:scale(.96)}
+  .flipped .revealbtn{display:none}
   .taphint{font-size:13px; font-weight:600; color:var(--muted)}
   .flipped .taphint{display:none}
-  .reveal{max-height:0; overflow:hidden; opacity:0; transition:max-height .28s ease, opacity .2s ease}
-  .flipped .reveal{opacity:1}
+  .reveal{opacity:1; margin-top:clamp(14px,4vw,22px); animation:revealfade .22s ease}
+  @keyframes revealfade{from{opacity:0}to{opacity:1}}
+  /* phone/portrait: hide the answer until flipped, with no height cap so it can NEVER clip */
+  @media (max-width:899px){ #dWrap:not(.flipped) .reveal{display:none} }
   .a{font-size:clamp(16px,4.3vw,20px); line-height:1.62; color:#2a3a52}
   .a b{font-weight:800; color:var(--navy)}
   .tipbox{
@@ -273,8 +277,7 @@
     </div>
 
     <div class="congrats" id="congrats">
-      <button class="x" id="congratsX" aria-label="close">✕</button>
-      <h2 id="cgTitle">Congratulations on your officership, love.</h2>
+      <h2 id="cgTitle">Hi, love ✦</h2>
       <p id="cgBody"></p>
     </div>
 
@@ -309,8 +312,7 @@
     <div class="cardbody" id="dWrap">
       <div class="qlabel" id="dLabel">mission</div>
       <div class="q" id="dQ">…</div>
-      <div class="arrow" id="dArrow">↓</div>
-      <div class="taphint">tap to reveal answer</div>
+      <button class="revealbtn" id="dArrow">Reveal answer ↓</button>
       <div class="reveal" id="dReveal">
         <div class="a" id="dA"></div>
         <div class="tipbox"><div class="tl">how to answer</div><p id="dTip"></p></div>
@@ -379,68 +381,68 @@
 /* ---------- DATA (21 cards) ---------- */
 const DATA = [
  {cat:"Technical",tag:"Mission",q:"How do you define an effective Client Relations Officer?",
-  a:`An effective Client Relations Officer is the face of the branch and usually the first person a client meets, so for me the job is to take away confusion and build trust from that very first hello. I guide people to the right channel, run the <b>4As</b> lobby flow, and treat everyone with patience no matter how busy it gets. My goal is to make every encounter feel human and reassuring, not just a transaction that gets processed.`,
+  a:`To me, an effective CRO is the heart of the branch — usually the first face a client sees, so my job is to ease their confusion and earn their trust from the very first hello. I steer people to the right channel, run the <b>4As</b> on the floor, and stay patient even when it's packed. What I'm after is that everyone leaves feeling genuinely looked after, not just processed.`,
   tip:`They're testing whether you see the role as relationship-building, not just queue management. Lead with "face of the branch" and 4As, and tie it to trust and digital adoption. Trap: reciting a generic job description with no client-trust angle.`},
  {cat:"Technical",tag:"4As",q:"Walk through Digital Banking via the 4As (Acknowledge, Assess, Assist, Advertise).",
-  a:`The <b>4As</b> are how I make digital banking feel easy instead of intimidating. First I Acknowledge the client so nobody stands there feeling lost, then I Assess why they came in, then I Assist by pointing them to the best channel — a machine, kiosk, or the app — and finally I Advertise the benefit of going digital. Said simply, it turns a cold lobby into a guided, approachable experience.`,
+  a:`The <b>4As</b> are my way of making digital feel welcoming rather than intimidating. I Acknowledge so no one's left standing lost, Assess what they actually came in for, Assist them to the right channel — a machine, kiosk, or the app — then Advertise why going digital is worth it for them. In short, it turns a busy lobby into a guided, easy experience.`,
   tip:`They want the four steps in order AND what each one accomplishes. Name 4As, then map each A to a client outcome (not lost → right channel → sees the benefit). Trap: listing the words without explaining the "why" behind each.`},
  {cat:"Technical",tag:"Machines",q:"Explain the features and benefits of the Service Assist Machine (SAM) and the Account Assist Kiosk.",
-  a:`The <b>Service Assist Machine</b>, or SAM, is self-service for everyday transactions like transfers, payments, enrollments, and requests, which shortens the queue and frees up our tellers for more important work. The Account Assist Kiosk handles guided CASA account opening and enrollment, so onboarding is faster with far less paperwork. Both do the same favor for the branch and the client: shorter waits and less manual load on the team.`,
+  a:`The <b>Service Assist Machine</b>, or SAM, is self-service for the everyday things — transfers, payments, enrollments, requests — which trims the queue and frees our tellers for heavier work. The Account Assist Kiosk handles guided CASA account opening and enrollment, so onboarding is quicker with far less paperwork. Both do the branch and the client the same favour: shorter waits and a lighter manual load.`,
   tip:`They're checking that you actually know what each machine does, not just the names. Lead with SAM = everyday self-service, kiosk = guided account opening. Trap: mixing up the two, or being vague about which one opens accounts.`},
  {cat:"Technical",tag:"Machines",q:"What distinguishes a UTM from a CDM, and how do both benefit customers and branches?",
-  a:`The quick difference is scope: a <b>UTM</b> lets a client both withdraw and deposit, while a CDM is deposit-only. Both give clients fast, round-the-clock self-service and pull traffic away from the counter. That frees our staff to spend time engaging clients and on advisory work instead of routine over-the-counter tasks.`,
+  a:`It really comes down to scope — a <b>UTM</b> handles both withdrawals and deposits, while a CDM is deposit-only. Both give clients fast, round-the-clock service and pull traffic off the counter. That frees us up to engage and advise clients instead of doing routine over-the-counter work.`,
   tip:`The whole question hinges on one fact: UTM = withdraw + deposit, CDM = deposit only. State that crisply first, then the shared benefit (24/7, less counter traffic). Trap: getting it backwards or saying the CDM also withdraws.`},
  {cat:"Handling",tag:"LIFT · don't push",q:"A senior citizen client declines to use the Service Assist Machine. How do you handle it?",
-  a:`When a senior citizen prefers not to use the machine, I respect that completely and never force digital on anyone. The first thing I do is assist them personally so they're served, and only then do I gently offer to walk them through it step by step right beside them — something like "it only takes a couple of minutes and I'll stay with you the whole time." That way they leave served today and a little more open to trying it next time.`,
+  a:`If a senior client would rather not use the machine, I respect that fully — I never force digital on anyone. I serve them personally first, and only then gently offer to guide them through it side by side — something like "it only takes a couple of minutes, and I'll stay with you the whole way." They leave cared for today, and a little more open to trying it next time.`,
   tip:`This tests empathy and the no-push principle (LIFT). Lead with "respect the choice, assist personally first," then offer the guided try. Trap: sounding like you'd pressure an elderly client into the machine to hit a target.`},
  {cat:"Handling",tag:"Reassure · escalate",q:"The CASA kiosk reverts to the landing page mid-encoding. What do you do?",
-  a:`If the kiosk drops back to the landing page mid-encoding, the first thing I do is stay calm and reassure the client that their details are safe. Then I restart it and assist them through re-encoding so they're not stuck redoing it alone. If it keeps happening, I escalate it as a system issue to <b>Channels Monitoring</b> and offer the counter so the client still gets served without delay.`,
+  a:`If the kiosk jumps back to the landing page mid-transaction, I stay calm and reassure the client their details are safe. I restart it and re-encode together with them so they're not redoing it alone. If it keeps glitching, I raise it to <b>Channels Monitoring</b> as a system issue and offer the counter so they're still served without delay.`,
   tip:`They want composure plus the right escalation path. Lead with "reassure data is safe, re-assist," then name Channels Monitoring and the counter fallback. Trap: leaving the client to figure it out, or not knowing where to escalate.`},
  {cat:"Handling",tag:"Refer-first",q:"A client requests a feature that is not feasible. How do you keep the relationship positive?",
-  a:`My rule is to never give a flat no, because that ends the conversation and the relationship. So I acknowledge what they're asking for, explain honestly what's possible right now, and then offer the closest alternative or refer them to the right officer or our Branch Head. The client walks away informed and still feeling helped, even if the exact request couldn't happen.`,
+  a:`I make it a rule never to give a flat no — that closes down both the conversation and the relationship. Instead I acknowledge what they're after, am honest about what's possible right now, and offer the closest alternative or point them to the right officer or our Branch Head. They walk away informed and still feeling helped, even when the exact request can't happen.`,
   tip:`This is about turning a "no" into a positive, plus knowing when to refer. Lead with "never a flat no — acknowledge, alternative, refer." Trap: over-promising the impossible, or shutting the client down with a bare no.`},
  {cat:"Handling",tag:"Fallback · escalate",q:"A client can't withdraw via QR code or biometrics at the branch ATM. How do you handle it?",
-  a:`When a client can't withdraw using QR or biometrics at the branch ATM, I reassure them and we check the basics together first. To make sure they aren't delayed, I offer an immediate fallback like using their card or going over the counter. Then I log and escalate the QR or biometrics fault to <b>Channels Monitoring</b> so the underlying issue actually gets fixed.`,
+  a:`If a client can't withdraw by QR or biometrics at the ATM, I reassure them and we run through the basics together. So they're not held up, I give them an immediate fallback — their card or the counter. Then I log and escalate the QR/biometrics fault to <b>Channels Monitoring</b> so the real cause gets fixed.`,
   tip:`They're assessing problem-solving plus that you don't strand the client. Lead with the immediate fallback (card/OTC), then escalate to Channels Monitoring. Trap: focusing only on the fault report and forgetting the client still needs their cash now.`},
  {cat:"Handling",tag:"HEAT",q:"A client complains their queue ticket number was skipped. What do you do?",
-  a:`A skipped queue number is frustrating, so I handle it with <b>HEAT</b>: I hear the client out fully, empathize that it's understandably annoying, apologize, and then take action. I verify the queue, sort out the right priority, and assist them promptly. Keeping it calm and fair is what restores their trust in us.`,
+  a:`A skipped number is genuinely frustrating, so I run <b>HEAT</b>: I hear the client out, empathize that it's annoying, apologize, then act. I check the queue, give them the right priority, and serve them quickly. Staying calm and fair is what wins their trust back.`,
   tip:`Classic complaint-handling — they want a named de-escalation framework. Lead with HEAT and spell out the four steps. Trap: jumping straight to "I'd fix the queue" and skipping the acknowledgment (hear / empathize / apologize).`},
  {cat:"Technical",tag:"Mission",q:"What are the benefits of Digital Banking? Explain its importance in Client Relations.",
-  a:`Beyond the obvious speed and 24/7 access, what I really value about digital banking is that it shows me how a client actually banks. So when I do sit down with them, I can advise on what genuinely fits them instead of a generic pitch. That's where digital quietly makes Client Relations better, not just faster — it gives me back the time and the insight to build a real relationship.`,
+  a:`Past the obvious speed and 24/7 access, what I value most is that digital shows me how a client actually banks. So when we do sit down, I can suggest what truly fits them rather than a one-size-fits-all pitch. That's how digital quietly improves client relations, not just speeds things up — it buys back the time, and the insight, to build a real relationship.`,
   tip:`They want benefits AND why it matters to YOUR role. Lead with the benefits, then pivot to "it frees me — and informs me — to build the relationship." Trap: listing only generic benefits with no link to the CRO mission.`},
  {cat:"Technical",tag:"Adoption",q:"Explain the UC / Digital Campaign of the Bank.",
-  a:`As I understand it, the bank's digital adoption campaign is the drive to grow how much clients use our digital channels — moving them from the counter toward SAM, the kiosks, the UTM and CDM, and the mobile app. My part in it is to promote, onboard, and support clients as a <b>Change Catalyst</b> on the floor. If the exact campaign scope ever differs, I'd frame it as that bank-wide push for digital adoption tied to my Change Catalyst role.`,
+  a:`From what I understand, the bank's digital campaign is the push to grow how much clients actually use our digital channels — shifting them from the counter to SAM, the kiosks, the UTM and CDM, and the mobile app. My part is to promote, onboard, and support clients as a <b>Change Catalyst</b> on the floor. If the exact scope differs, I'd frame it as that bank-wide digital-adoption drive tied to my Change Catalyst role.`,
   tip:`They're checking your grasp of the adoption push and your place in it. Lead with "digital adoption campaign" and "Change Catalyst." Trap: inventing precise campaign details — hedge gracefully if you're unsure of the exact scope.`},
  {cat:"Technical",tag:"Downtime",q:"What should be done if the SAM or the Teller's SAM app is offline?",
-  a:`When SAM or the teller's SAM app is offline, I inform the client politely, apologize for the inconvenience, and immediately offer an alternative like the counter or another available machine. At the same time I report the outage to support or <b>Channels Monitoring</b> and switch back to digital assistance the moment it's restored. The one thing I hold to is that the client never leaves unserved.`,
+  a:`If SAM or the teller's SAM app goes down, I let the client know politely, apologize for the trouble, and right away offer another route — the counter or a working machine. At the same time I report the outage to support or <b>Channels Monitoring</b>, and I switch back to digital the moment it's up. My one rule is that the client never leaves unserved.`,
   tip:`They want graceful downtime handling plus the report step. Lead with "inform, apologize, offer alternative," name Channels Monitoring, and close with "never leaves unserved." Trap: only reporting the outage and not giving the client a way to transact now.`},
  {cat:"Technical",tag:"How-to",q:"If an account has a Bills Purchase (BP) line, how will the client encode it into SAM?",
-  a:`For an account with a Bills Purchase line, I'd guide the client to select the bills payment or BP transaction on <b>SAM</b>, choose the correct biller or account, enter the amount and details, confirm, and keep the reference number. I always walk them through it that first time so the steps feel familiar. The aim is that on their next visit they can do it confidently on their own.`,
+  a:`For an account with a Bills Purchase line, I'd walk the client to the bills payment / BP option on <b>SAM</b>, pick the right biller or account, enter the amount and details, confirm, and save the reference number. I always guide them through it the first time so it feels familiar. The goal is that next visit they can do it on their own with confidence.`,
   tip:`A how-to question testing real machine familiarity. Walk the steps in order on SAM and end with "keep the reference + so they self-serve next time." Trap: being fuzzy on the sequence or forgetting the confirm / reference step.`},
  {cat:"Technical",tag:"Adoption",q:"What are your strategies in promoting digital banking adoption among customers?",
-  a:`My strategy is to make digital the easy default before anyone even reaches the counter. I stay visible, read the queue, and catch routine transactions early, then run a quick hands-on demo on a small first transaction so the client feels the win once. I also keep track of who I've already onboarded so I follow up instead of re-pitching. The number I'm really trying to move is repeat self-service, not a one-time try.`,
+  a:`My strategy is to make digital the easy default before anyone even reaches the counter. I stay visible, watch the queue, catch routine transactions early, and run a quick hands-on demo on one small transaction so the client feels the win once. I also note who I've already onboarded so I follow up instead of re-pitching. What I'm really moving is repeat self-service, not a one-time try.`,
   tip:`They want a real strategy, not "I'd encourage them." Lead with "make digital the easy default, demo a small win, follow up." Trap: vague enthusiasm with no concrete, repeatable tactic.`},
  {cat:"Technical",tag:"4As · LIFT",q:"How will you approach a customer to use (adopt) a new digital feature or machine?",
-  a:`The way I approach someone about a new feature is to open warmly, read the situation, and invite rather than pressure — something like "May I show you a faster way? I'll guide you step by step." I keep my words simple and non-technical so nothing feels over their head. And I stay right beside them through that first try so they never feel left to figure it out alone.`,
+  a:`When I introduce a new feature, I open warmly, read the moment, and invite rather than pressure — something like "May I show you a faster way? I'll guide you step by step." I keep it plain and jargon-free so nothing feels over their head, and I stay right beside them through that first try so they're never left figuring it out alone.`,
   tip:`This blends the 4As approach with the LIFT no-pressure rule. Lead with "invite, not pressure" and a sample warm line. Trap: sounding pushy, or using bank jargon a first-timer wouldn't understand.`},
  {cat:"Handling",tag:"HEAT · STAR",q:"Describe a time you handled a difficult client. How did you manage it?",
-  a:`There was a time a client came to the counter upset over a delayed transaction, and I handled it with <b>HEAT</b>. I heard them out without interrupting, empathized with how frustrating the wait was, apologized sincerely, and then took concrete action to trace it and get it resolved. They left satisfied, and it stuck with me as proof that staying calm and actually acting on the problem turns a tense moment around.`,
+  a:`One time a client came up to the counter upset about a delayed transaction, and I handled it with <b>HEAT</b>. I let them speak without cutting in, empathized with how frustrating the wait was, apologized sincerely, then took real action to trace it and get it sorted. They left satisfied — and it stuck with me that staying calm and actually fixing the problem can turn a tense moment right around.`,
   tip:`Behavioral question — they want a STAR story (situation → action → result) wrapped in HEAT. Lead with a real, specific scenario, then the steps, then the positive result. Swap my example for YOUR real one. Trap: a vague hypothetical with no concrete action or outcome.`},
  {cat:"Handling",tag:"Trust-first",q:"How would you engage a client who is unreceptive to exploring the digital machines/kiosks?",
-  a:`With a client who's clearly not interested in the machines, I don't push at all. The first thing I do is assist them in their preferred way to earn a bit of trust, and once that's there I just plant the seed by mentioning one clear benefit and offering to show them whenever they feel ready. For me, adoption always follows trust, so I respect their pace and let it come naturally.`,
+  a:`If a client clearly isn't interested in the machines, I don't push at all. I help them their own way first to earn a bit of trust, and once it's there I just plant a seed — one clear benefit and an offer to show them whenever they're ready. For me adoption follows trust, so I let it happen at their pace.`,
   tip:`Tests patience and the trust-first principle. Lead with "don't push, build trust first, plant one benefit." Trap: treating an unreceptive client as someone to win over today rather than someone whose pace you respect.`},
  {cat:"Handling",tag:"Priority client",q:"A Diamond (priority) cardholder won't encode bulk transactions in SAM. How do you handle it?",
-  a:`With a Diamond cardholder I lead with discretion and speed, and I never force the machine. I assist them personally so it stays completely effortless, and if I mention SAM at all, I tie it to their priority — bulk runs faster and they skip the floor entirely next visit. The offer is a convenience for them, never a nudge for my numbers, because with a priority client the relationship always comes first.`,
+  a:`With a Diamond cardholder I lead with discretion and speed, and I never force the machine. I assist them personally so it stays effortless, and if I bring up SAM at all, I tie it to their priority — bulk runs faster and they skip the floor next time. It's framed as a convenience for them, never a nudge for my numbers, because with a priority client the relationship comes first.`,
   tip:`Tests judgment with a priority client — relationship over adoption metrics. Lead with "honor the premium relationship, assist personally," then a soft benefit-for-them offer. Trap: prioritizing the digital push over a high-value client's comfort.`},
  /* ---- bonus prep (added on QA advice) ---- */
  {cat:"Service",tag:"SERVE",q:"What is the S.E.R.V.E service standard, and how do you live it every day?",
-  a:`<b>S.E.R.V.E</b> is how I show up for every client, every day. I <b>S</b>eek to understand by listening for the real need before assuming, <b>E</b>xplore options before I conclude, <b>R</b>efer when in doubt instead of guessing or saying no, <b>V</b>alidate the client so they feel they matter, and <b>E</b>xecute with care — clearly, politely, and with a real solution. It's what keeps me from ever turning a client away at first touch.`,
+  a:`<b>S.E.R.V.E</b> is how I show up for every client, every day. I <b>S</b>eek to understand by listening for the real need before I assume, <b>E</b>xplore the options before I conclude, <b>R</b>efer when I'm in doubt rather than guess or say no, <b>V</b>alidate the client so they feel they matter, and <b>E</b>xecute with care — clear, polite, and with a real solution. That's what stops me ever turning someone away at first touch.`,
   tip:`If they ask SERVE, name all five letters in order with what each means, then tie it to "never turn a client away — refer and find a solution." Trap: blanking on a letter — drill S-E-R-V-E until it's automatic.`},
  {cat:"Service",tag:"Your 'why'",q:"Why BDO, and why the Client Relations Officer role?",
-  a:`I chose BDO because it's a bank Filipinos genuinely trust to be there for them, and I want to be part of that right at the frontline. The CRO role fits me because I'm at my best with people — calming someone who's confused, guiding them, making the branch feel welcoming. <b>[Add your own genuine reason here: a short story, a value, or what first drew you to banking.]</b> This is where I can grow while truly helping clients every day.`,
+  a:`I chose BDO because it's a bank Filipinos genuinely rely on, and I want to be part of that right at the frontline. The CRO role suits me because I'm at my best with people — settling someone who's confused, guiding them, making the branch feel welcoming. <b>[Add your own genuine reason here: a short story, a value, or what first pulled you toward banking.]</b> It's where I can keep growing while really helping clients each day.`,
   tip:`Panels almost always ask this — never wing it. Have a 30-second answer: one reason about BDO, one about the role fitting YOU, one personal line. Make the bracketed part real and yours. Trap: a generic "BDO is big and stable" with nothing personal.`},
  {cat:"Service",tag:"Security",q:"How do you protect client security and data on the floor?",
-  a:`Protecting clients is non-negotiable for me. I never key in or ask a client to reveal their PIN or OTP — they always enter those themselves. I stay alert at the ATM and SAM for anything off, like a possible skimming device or someone hovering too close, and I keep client details confidential, accessing only what I'm authorized to. If anything looks like fraud or a suspicious transaction, I follow protocol and escalate it rather than handle it on my own.`,
+  a:`Protecting clients isn't negotiable for me. I never enter or ask for a client's PIN or OTP — they key those in themselves, always. I stay alert around the ATM and SAM for anything off, like a skimming device or someone hovering too close, and I keep client details confidential, touching only what I'm cleared to. If something looks like fraud or a suspicious transaction, I follow protocol and escalate rather than handle it alone.`,
   tip:`A bank panel loves to probe security. Lead with "never handle a client's PIN/OTP," then confidentiality + escalate-if-suspicious. Trap: sounding casual — banks want zero tolerance and a clear escalation step.`},
 ];
 
@@ -491,6 +493,24 @@ const CREATIVE = {
  rankNotes:["","nice — keep going","you're getting this","almost there","really close now","that's all of them — you're ready"],
  whispers:["keep going","nice pace","you knew this one","almost there","doing well","you've got this"],
  welcomeNote:`Congratulations on making officer. I made you this so the revalida feels easy — we'll go through it together until it's all yours. You've got this, love. — R`,
+ cheers:[
+  "Every card today is one less nerve on panel day.",
+  "You're not memorizing — you're becoming the officer.",
+  "Calm and clear beats fast and flustered. That's you.",
+  "The branch is lucky it's getting you.",
+  "Future CRO in the making — keep going.",
+  "Know it cold here, say it warm there.",
+  "A few cards now, a confident 'yes' from the panel later.",
+  "You've got the heart for this — now the answers.",
+  "Officers are made in small reps like this one.",
+  "Trust the prep; your panel-day self will thank you.",
+  "One more pass, one notch more ready.",
+  "You handle people beautifully — this is just the words for it.",
+  "Steady wins the revalida, and steady is your default.",
+  "Show up here today, walk in there certain.",
+  "Almost an officer, love. Keep going.",
+  "Breathe — you already know more than you think.",
+ ],
 };
 
 const NAV=[
@@ -522,6 +542,7 @@ function renderMenu(){
   $('mBar').style.width=(n/DATA.length*100)+'%';
   $('mPct').textContent=Math.round(n/DATA.length*100)+'%';
   $('mMastered').textContent=n; $('mBest').textContent=S.best; $('mXP').textContent=S.xp;
+  $('cgBody').textContent=CREATIVE.cheers[Math.floor(Math.random()*CREATIVE.cheers.length)];
 }
 function buildNav(){
   const nav=$('nav'); nav.innerHTML='';
@@ -532,16 +553,14 @@ function buildNav(){
     nav.appendChild(b);
   });
 }
-$('cgBody').textContent=CREATIVE.congratsBody;
-if(!S.cg){ $('congrats').style.display='none'; }
-$('congratsX').onclick=()=>{ $('congrats').style.display='none'; S.cg=0; save(); };
+// rotating hello + motivating note is set fresh on every menu render (see renderMenu)
 
 /* ---------- deck ---------- */
 function start(m){
   mode=m; isQuiz=(m==='quiz'); sessionGot=0; streak=0; advCount=0;
   let items=DATA.map((d,i)=>i);
   if(m==='Technical'||m==='Handling'||m==='Service') items=items.filter(i=>DATA[i].cat===m);
-  if(isQuiz) items=shuffle(items.slice());
+  items=shuffle(items);            // always shuffle, every mode, every time
   deck=items; pos=0; show('deck'); renderCard();
 }
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -553,7 +572,6 @@ function renderCard(){
   $('dLabel').textContent=d.tag;
   $('dQ').innerHTML=d.q;
   $('dA').innerHTML=d.a; $('dTip').textContent=d.tip;
-  $('dReveal').style.maxHeight='0';
   $('dWrap').classList.remove('flipped');
   $('dActions').style.display='none';
   $('dPrev').disabled=pos===0;
@@ -563,10 +581,10 @@ function renderCard(){
 }
 function flip(){
   if(flipped)return; flipped=true;
-  const wrap=$('dWrap'),r=$('dReveal');
-  wrap.classList.add('flipped');
-  r.style.maxHeight=r.scrollHeight+40+'px';
+  const wrap=$('dWrap');
+  wrap.classList.add('flipped');   // reveal shows in full; cardbody scrolls if it's long
   $('dActions').style.display='flex';
+  wrap.scrollTop=0;
 }
 $('dQ').onclick=flip; $('dArrow').onclick=flip;
 function paintStreak(){const c=$('dStreak');c.textContent='streak '+streak;c.classList.toggle('cold',streak===0);}
