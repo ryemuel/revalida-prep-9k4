@@ -100,6 +100,23 @@
   .wstart{width:100%; margin-top:4px}
   .howto-link{background:none; border:none; color:var(--sky); font-size:12px; font-weight:600; cursor:pointer; padding:4px; align-self:center}
 
+  /* ---------- corner buttons (dashboard) ---------- */
+  .corner{position:absolute; top:calc(env(safe-area-inset-top) + clamp(20px,5vw,40px)); right:clamp(20px,6vw,52px); display:flex; gap:8px; z-index:6}
+  .corner-btn{width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--muted); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1}
+  .corner-btn:active{transform:scale(.92)}
+
+  /* ---------- confetti ---------- */
+  .confetti{position:fixed; top:-14px; width:9px; height:13px; z-index:120; border-radius:2px; pointer-events:none; will-change:transform,opacity}
+  @keyframes drop{to{transform:translateY(112vh) rotate(680deg); opacity:0}}
+
+  /* ---------- about / source ---------- */
+  #about .abody{flex:1; overflow-y:auto; padding-top:clamp(10px,3vw,18px); -ms-overflow-style:none; scrollbar-width:none}
+  #about .abody::-webkit-scrollbar{display:none}
+  #about h2.ab-title{font-size:clamp(28px,7.5vw,42px); font-weight:800; letter-spacing:-.04em; color:var(--navy); line-height:1; margin-bottom:16px}
+  #about p{font-size:clamp(14px,3.8vw,16.5px); line-height:1.6; color:#2f445f; margin-bottom:13px}
+  #about p b{color:var(--navy)}
+  #about .meta-line{font-size:12.5px; color:var(--muted); margin-top:8px}
+
   /* ---------- top ---------- */
   .top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px}
   .logo{width:clamp(64px,18vw,92px); height:auto; display:block}
@@ -244,6 +261,11 @@
       </svg>
     </div>
 
+    <div class="corner">
+      <button class="corner-btn" id="srcBtn" title="About & source" aria-label="About and source">&#9432;</button>
+      <button class="corner-btn" id="resetBtn" title="Reset progress" aria-label="Reset progress">&#8635;</button>
+    </div>
+
     <div class="titleblock">
       <h1 class="title">Heven's<br>Revalida</h1>
       <div class="sub" id="welcomeLine">for my lovelove ✦</div>
@@ -317,6 +339,21 @@
       <div class="pt-intro" id="pIntro"></div>
       <div id="pGroups"></div>
       <div class="sig" style="text-align:left;margin:6px 0 20px">you've rehearsed this. now go be yourself. ✦ R</div>
+    </div>
+  </section>
+
+  <!-- ======= ABOUT / SOURCE ======= -->
+  <section id="about" class="screen">
+    <div class="deck-top">
+      <button class="pill soft" id="aboutBack">‹ back</button>
+      <div class="counter">about</div>
+    </div>
+    <div class="abody">
+      <h2 class="ab-title">About &amp;<br>source</h2>
+      <p>A personal study reviewer for the <b>BDO officership revalida</b> — the new-hire Client Relations Officer panel.</p>
+      <p><b>Where the content comes from:</b> your BDO CRO/CRA training handbook and the official revalida question sheets. The frameworks — <b>4As, LIFT, HEAT, SERVE</b> — are straight from that material.</p>
+      <p><b>Make them your own.</b> The answers are study aids, not a script — especially the “Why BDO?” and “difficult client” cards, those land best in your own words.</p>
+      <p class="meta-line">21 cards · built by R, for H ✦</p>
     </div>
   </section>
 
@@ -538,6 +575,7 @@ $('dGot').onclick=()=>{
   const idx=deck[pos], before=rankInfo(mCount()).level;
   if(!S.mastered[idx]){S.mastered[idx]=true;S.xp+=100;}
   streak++; sessionGot++; if(streak>S.best)S.best=streak; save();
+  confetti(16);
   const after=rankInfo(mCount()).level;
   if(after>before) rankUp(after);
   advance();
@@ -560,6 +598,21 @@ function rankUp(lvl){
   const note=CREATIVE.rankNotes[lvl-1];
   const dot=$('oDot'); dot.classList.add('pulse'); setTimeout(()=>dot.classList.remove('pulse'),1200);
   if(note) whisper(note);
+  confetti(80);
+}
+
+/* ---------- confetti ---------- */
+function confetti(n){
+  const cols=['#043673','#FFB20C','#59A7E7','#ffd97a'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=(Math.random()*100)+'vw';
+    c.style.background=cols[i%cols.length];
+    c.style.animation='drop '+(1+Math.random()*1.3).toFixed(2)+'s '+(Math.random()*0.25).toFixed(2)+'s cubic-bezier(.22,.6,.3,1) forwards';
+    c.style.transform='rotate('+Math.floor(Math.random()*360)+'deg)';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),2800);
+  }
 }
 
 /* ---------- panel ---------- */
@@ -590,9 +643,19 @@ function finish(){
   const sec=$('sSecret');
   if(n===DATA.length){sec.textContent=CREATIVE.secret;sec.style.display='block';}else{sec.style.display='none';}
   show('summary');
+  confetti(n===DATA.length?140 : pct>=80?90 : pct>=50?55 : 30);
 }
 $('sAgain').onclick=()=>start(mode==='panel'?'all':mode);
 $('sHome').onclick=()=>{renderMenu();show('menu');};
+
+/* ---------- reset + about (dashboard corner) ---------- */
+$('resetBtn').onclick=()=>{
+  if(confirm('Reset all your progress? This clears mastered cards, best streak and XP. (Your answers stay.)')){
+    S.mastered={}; S.xp=0; S.best=0; save(); renderMenu();
+  }
+};
+$('srcBtn').onclick=()=>{ $('about').querySelector('.abody').scrollTop=0; show('about'); };
+$('aboutBack').onclick=()=>{ renderMenu(); show('menu'); };
 
 /* ---------- keyboard ---------- */
 document.addEventListener('keydown',e=>{
