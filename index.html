@@ -80,12 +80,25 @@
     #panel .ptgroup{break-inside:avoid; -webkit-column-break-inside:avoid}
   }
 
-  .screen{display:none; flex-direction:column; height:100%; animation:fade .4s ease}
+  .screen{display:none; flex-direction:column; height:100%; animation:fade .22s ease}
   .screen.show{display:flex}
-  #menu{overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none}
-  #menu::-webkit-scrollbar{display:none}
+  #menu,#welcome{overflow-y:auto; -ms-overflow-style:none; scrollbar-width:none}
+  #menu::-webkit-scrollbar,#welcome::-webkit-scrollbar{display:none}
   #menu .spacer{min-height:0}
-  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* ---------- welcome / onboarding ---------- */
+  .wbody{margin:auto 0; display:flex; flex-direction:column; padding:clamp(8px,3vw,18px) 0}
+  .wbadge{font-size:24px; color:var(--gold); font-weight:800; line-height:1}
+  .wtitle{font-size:clamp(33px,9vw,52px); font-weight:800; letter-spacing:-.04em; line-height:.95; color:var(--navy); margin-top:12px}
+  .wnote{font-size:clamp(14px,3.8vw,16.5px); line-height:1.6; color:#3a4a60; margin-top:14px; max-width:48ch}
+  .steps{display:flex; flex-direction:column; gap:clamp(12px,3vw,16px); margin:clamp(22px,6vw,32px) 0}
+  .step{display:flex; gap:14px; align-items:flex-start}
+  .step .sn{flex:0 0 auto; width:30px; height:30px; border-radius:9px; background:var(--sky-wash); color:var(--navy); font-weight:800; font-size:14px; display:flex; align-items:center; justify-content:center}
+  .step .st{font-size:clamp(14.5px,3.9vw,16.5px); line-height:1.5; color:#2c3a50}
+  .step .st b{color:var(--navy)}
+  .wstart{width:100%; margin-top:4px}
+  .howto-link{background:none; border:none; color:var(--sky); font-size:12px; font-weight:600; cursor:pointer; padding:4px; align-self:center}
 
   /* ---------- top ---------- */
   .top{display:flex; justify-content:space-between; align-items:flex-start; gap:16px}
@@ -155,7 +168,7 @@
   .flipped .arrow{transform:rotate(180deg); color:var(--faint)}
   .taphint{font-size:13px; font-weight:600; color:var(--muted)}
   .flipped .taphint{display:none}
-  .reveal{max-height:0; overflow:hidden; opacity:0; transition:max-height .45s ease, opacity .35s ease}
+  .reveal{max-height:0; overflow:hidden; opacity:0; transition:max-height .28s ease, opacity .2s ease}
   .flipped .reveal{opacity:1}
   .a{font-size:clamp(16px,4.3vw,20px); line-height:1.62; color:#2a3a52}
   .a b{font-weight:800; color:var(--navy)}
@@ -203,6 +216,22 @@
 <body>
 <div class="app">
 
+  <!-- ======= WELCOME / ONBOARDING ======= -->
+  <section id="welcome" class="screen">
+    <div class="wbody">
+      <div class="wbadge">✦</div>
+      <h1 class="wtitle">Welcome,<br>lovelove</h1>
+      <p class="wnote" id="wNote"></p>
+      <div class="steps">
+        <div class="step"><div class="sn">1</div><div class="st"><b>Flip a card.</b> Tap any question to reveal the answer plus a quick “how to answer” tip.</div></div>
+        <div class="step"><div class="sn">2</div><div class="st"><b>Mark it.</b> Tap <b>Got it</b> when you can say it confidently, or <b>One more look</b> to revisit — your rank fills up as you go.</div></div>
+        <div class="step"><div class="sn">3</div><div class="st"><b>Quiz me.</b> Shuffles everything so you can test yourself and build a streak.</div></div>
+        <div class="step"><div class="sn">4</div><div class="st"><b>Panel-day tips.</b> How to speak and carry yourself in front of the panel.</div></div>
+      </div>
+      <button class="act got wstart" id="wStart">Let’s start ›</button>
+    </div>
+  </section>
+
   <!-- ======= MENU ======= -->
   <section id="menu" class="screen show">
     <div class="top">
@@ -241,6 +270,7 @@
         <div class="stat"><div class="n gold" id="mBest">0</div><div class="l">best streak</div></div>
         <div class="stat"><div class="n" id="mXP">0</div><div class="l">xp</div></div>
       </div>
+      <button class="howto-link" id="howtoLink">how to use this app</button>
       <div class="sig">built by R, for H ✦</div>
     </div>
   </section>
@@ -423,6 +453,7 @@ const CREATIVE = {
  ranks:["Getting started","Finding your footing","Steady","Panel-ready","Sharp","Ready"],
  rankNotes:["","nice — keep going","you're getting this","almost there","really close now","that's all of them — you're ready"],
  whispers:["keep going","nice pace","you knew this one","almost there","doing well","you've got this"],
+ welcomeNote:`Congratulations on making officer. I made you this so the revalida feels easy — we'll go through it together until it's all yours. You've got this, love. — R`,
 };
 
 const NAV=[
@@ -571,8 +602,14 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowLeft'&&pos>0){pos--;renderCard();}
 });
 
+/* ---------- welcome / onboarding ---------- */
+$('wNote').textContent=CREATIVE.welcomeNote;
+$('wStart').onclick=()=>{ S.onboarded=1; save(); renderMenu(); show('menu'); };
+$('howtoLink').onclick=()=>{ $('welcome').scrollTop=0; show('welcome'); };
+
 /* ---------- init ---------- */
 buildNav(); renderMenu();
+if(!S.onboarded){ show('welcome'); }
 
 /* register offline service worker */
 if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
