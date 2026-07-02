@@ -64,14 +64,15 @@
     #deck .cardbody{
       display:grid;
       grid-template-columns:1fr 1fr;
-      grid-template-rows:auto auto auto auto;
+      grid-template-rows:auto auto auto auto auto;
       column-gap:clamp(44px,5vw,88px);
       align-content:center;
     }
     #deck .qlabel{grid-column:1; grid-row:1}
     #deck .q{grid-column:1; grid-row:2}
-    #deck .revealbtn{grid-column:1; grid-row:3; justify-self:start}
-    #deck .taphint{grid-column:1; grid-row:4}
+    #deck .voicerow{grid-column:1; grid-row:3}
+    #deck audio.vplay{grid-column:1; grid-row:4}
+    #deck .revealbtn{grid-column:1; grid-row:5; justify-self:start}
     #deck .reveal{grid-column:2; grid-row:1 / -1; align-self:center; margin-top:0; max-height:none !important; overflow:visible; visibility:hidden}
     #deck .flipped .reveal{visibility:visible}
 
@@ -104,6 +105,21 @@
   .corner{position:absolute; top:calc(env(safe-area-inset-top) + clamp(20px,5vw,40px)); right:clamp(20px,6vw,52px); display:flex; gap:8px; z-index:6}
   .corner-btn{width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--muted); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1}
   .corner-btn:active{transform:scale(.92)}
+
+  /* ---------- voice layer ---------- */
+  .voicerow{display:flex; gap:9px; align-items:center; margin-top:clamp(14px,4vw,20px); flex-wrap:wrap}
+  .vbtn{background:#fff; border:1.5px solid var(--line); border-radius:99px; padding:10px 16px; font-size:13.5px; font-weight:800; color:var(--navy); cursor:pointer; transition:.12s}
+  .vbtn:active{transform:scale(.96)}
+  .vbtn.rec{border-color:var(--gold); color:#7a5c1e; background:var(--gold-wash)}
+  .vbtn.stop{background:var(--navy); color:#fff; border-color:var(--navy)}
+  audio.vplay{width:100%; margin-top:10px; height:40px; display:none}
+  .keys{margin-top:clamp(14px,4vw,20px)}
+  .keys .kt{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); margin-bottom:8px}
+  .keys .kt b{color:var(--navy)}
+  .kchips{display:flex; flex-wrap:wrap; gap:8px}
+  .kchip{background:#fff; border:1.5px solid var(--line); border-radius:99px; padding:8px 14px; font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; transition:.12s}
+  .kchip.hit{background:var(--gold-wash); border-color:var(--gold); color:#7a5c1e}
+  .kchip.hit::before{content:"✓ "}
 
   /* ---------- game layer ---------- */
   .game{margin-top:clamp(14px,4vw,20px); display:flex; flex-direction:column; gap:10px}
@@ -366,9 +382,15 @@
     <div class="cardbody" id="dWrap">
       <div class="qlabel" id="dLabel">mission</div>
       <div class="q" id="dQ">…</div>
+      <div class="voicerow">
+        <button class="vbtn" id="dSpeak">🔊 Hear it</button>
+        <button class="vbtn rec" id="dRec">🎙 Record my answer</button>
+      </div>
+      <audio class="vplay" id="dPlay" controls></audio>
       <button class="revealbtn" id="dArrow">Reveal answer ↓</button>
       <div class="reveal" id="dReveal">
         <div class="a" id="dA"></div>
+        <div class="keys"><div class="kt">key words — tap the ones you said · <b id="dKeyScore"></b></div><div class="kchips" id="dKeys"></div></div>
         <div class="tipbox"><div class="tl">how to answer</div><p id="dTip"></p></div>
       </div>
     </div>
@@ -446,9 +468,15 @@
         <div class="qlabel" id="bTag">…</div>
         <div class="q" id="bQ">…</div>
         <div class="btimer" id="bTimer">90s</div>
-        <button class="revealbtn" id="bReveal" style="margin-top:8px">Show answer ↓</button>
+        <div class="voicerow" style="margin-top:4px">
+          <button class="vbtn" id="bSpeak">🔊 Hear it again</button>
+          <button class="vbtn rec" id="bRec">🎙 Record</button>
+        </div>
+        <audio class="vplay" id="bPlay" controls></audio>
+        <button class="revealbtn" id="bReveal" style="margin-top:14px">Show answer ↓</button>
         <div id="bAnswer" style="display:none">
           <div class="a" id="bA"></div>
+          <div class="keys"><div class="kt">key words — did you hit these?</div><div class="kchips" id="bKeys"></div></div>
           <div class="actions" style="margin-top:16px">
             <button class="act again" id="bMiss">Missed it</button>
             <button class="act got" id="bNail">Nailed it ✓</button>
@@ -584,6 +612,76 @@ const DATA = [
   a:`Protecting clients isn't negotiable for me. I never enter or ask for a client's PIN or OTP — they key those in themselves, always. I stay alert around the ATM and SAM for anything off, like a skimming device or someone hovering too close, and I keep client details confidential, touching only what I'm cleared to. If something looks like fraud or a suspicious transaction, I follow protocol and escalate rather than handle it alone.`,
   tip:`A bank panel loves to probe security. Lead with "never handle a client's PIN/OTP," then confidentiality + escalate-if-suspicious. Trap: sounding casual — banks want zero tolerance and a clear escalation step.`},
 ];
+
+/* ---------- key words per card (same order as DATA) ---------- */
+const KEYS=[
+ ["face of the branch","builds trust","4As","patience","human, not just a transaction"],
+ ["Acknowledge","Assess","Assist","Advertise","easy, not intimidating"],
+ ["SAM = everyday transactions","kiosk = account opening","shorter queues","less paperwork"],
+ ["UTM = withdraw + deposit","CDM = deposit only","24/7 self-service","less counter traffic"],
+ ["respect the choice","never force digital","assist personally first","guide step by step","open to next time"],
+ ["stay calm","details are safe","re-encode together","Channels Monitoring","counter fallback"],
+ ["reassure","verify the mobile number","client taps resend","officer / counter fallback","OTP stays with the client"],
+ ["never a flat no","acknowledge the request","honest about what's possible","closest alternative","refer / Branch Head"],
+ ["reassure","check basics together","fallback: card or counter","escalate to Channels Monitoring"],
+ ["HEAT","hear them out","empathize","apologize","verify the queue + act"],
+ ["speed, convenience, 24/7","shows how the client banks","advise what fits","time + insight","real relationship"],
+ ["digital adoption drive","counter → digital channels","SAM, kiosks, UTM/CDM, app","Change Catalyst"],
+ ["inform politely","apologize","offer an alternative","report to Channels Monitoring","never leaves unserved"],
+ ["manual queueing","I become the queue","keep clients informed","senior/PWD priority lanes","report to Channels Monitoring"],
+ ["bills payment / BP on SAM","correct biller","amount + details","confirm","keep the reference number"],
+ ["digital as the easy default","catch them before the counter","hands-on demo","small first win","follow up, repeat self-service"],
+ ["open warmly","invite, not pressure","'may I show you a faster way'","simple, no jargon","stay beside them"],
+ ["HEAT","a real, specific story","listened without interrupting","apologized sincerely","action + result"],
+ ["don't push","help them their way first","build trust","plant one benefit","their pace"],
+ ["discretion and speed","never force","assist personally","benefit for THEM","relationship first"],
+ ["Seek to understand","Explore options","Refer when in doubt","Validate the client","Execute with care"],
+ ["a bank Filipinos trust","the frontline","at my best with people","YOUR real reason","grow while helping"],
+ ["never handle PIN or OTP","client keys it in","alert for skimming","confidentiality","escalate anything suspicious"],
+];
+
+/* ---------- voice: hear the question + record yourself ---------- */
+function speak(text){
+  if(!('speechSynthesis' in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g,''));
+  u.lang='en-US'; u.rate=0.95;
+  speechSynthesis.speak(u);
+}
+let recNow=null, recStream=null, recChunks=[], recBtnEl=null, recPlayEl=null, recUrl=null;
+async function toggleRec(btn,player){
+  if(recNow && recNow.state==='recording'){ recNow.stop(); return; }
+  try{ recStream=await navigator.mediaDevices.getUserMedia({audio:true}); }
+  catch(e){ alert('Microphone not available — allow the mic for this app in Settings, love.'); return; }
+  recBtnEl=btn; recPlayEl=player; recChunks=[];
+  recNow=new MediaRecorder(recStream);
+  recNow.ondataavailable=e=>{ if(e.data && e.data.size) recChunks.push(e.data); };
+  recNow.onstop=()=>{
+    const blob=new Blob(recChunks,{type:recNow.mimeType||'audio/mp4'});
+    if(recUrl)URL.revokeObjectURL(recUrl);
+    recUrl=URL.createObjectURL(blob);
+    recPlayEl.src=recUrl; recPlayEl.style.display='block';
+    recStream.getTracks().forEach(t=>t.stop());
+    recBtnEl.textContent='🎙 Record again'; recBtnEl.classList.remove('stop'); recBtnEl.classList.add('rec');
+  };
+  recNow.start();
+  btn.textContent='⏹ Stop'; btn.classList.remove('rec'); btn.classList.add('stop');
+}
+function resetRec(btn,player,label){
+  if(recNow && recNow.state==='recording'){ try{recNow.stop();}catch(e){} }
+  player.style.display='none'; player.removeAttribute('src');
+  btn.textContent=label; btn.classList.remove('stop'); btn.classList.add('rec');
+}
+function renderKeys(container,gi,scoreEl){
+  container.innerHTML='';
+  let hits=0; const ks=KEYS[gi]||[];
+  ks.forEach(k=>{
+    const c=document.createElement('button'); c.className='kchip'; c.textContent=k;
+    c.onclick=()=>{ c.classList.toggle('hit'); hits=container.querySelectorAll('.hit').length; if(scoreEl)scoreEl.textContent=hits+'/'+ks.length; };
+    container.appendChild(c);
+  });
+  if(scoreEl)scoreEl.textContent='0/'+ks.length;
+}
 
 /* ---------- delivery (panel-speaking) ---------- */
 const DELIVERY = {
@@ -775,6 +873,9 @@ function renderCard(){
   $('dA').innerHTML=d.a; $('dTip').textContent=d.tip;
   if(S.personal.story && d.tag==='HEAT · STAR') $('dA').innerHTML+='<div class="mine"><b>Your story:</b> '+esc(S.personal.story)+'</div>';
   if(S.personal.why && d.tag==="Your 'why'") $('dA').innerHTML+='<div class="mine"><b>Your why:</b> '+esc(S.personal.why)+'</div>';
+  if('speechSynthesis' in window)speechSynthesis.cancel();
+  resetRec($('dRec'),$('dPlay'),'🎙 Record my answer');
+  renderKeys($('dKeys'),deck[pos],$('dKeyScore'));
   $('dWrap').classList.remove('flipped');
   $('dActions').style.display='none';
   $('dPrev').disabled=pos===0;
@@ -790,6 +891,8 @@ function flip(){
   wrap.scrollTop=0;
 }
 $('dQ').onclick=flip; $('dArrow').onclick=flip;
+$('dSpeak').onclick=()=>speak(DATA[deck[pos]].q);
+$('dRec').onclick=()=>toggleRec($('dRec'),$('dPlay'));
 function paintStreak(){const c=$('dStreak');c.textContent='streak '+streak;c.classList.toggle('cold',streak===0);}
 
 $('dGot').onclick=()=>{
@@ -923,13 +1026,17 @@ function bossRound(){
   $('bTag').textContent=(bIdx+1)+' of 5 · '+d.tag;
   $('bQ').innerHTML=d.q; $('bA').innerHTML=d.a;
   $('bAnswer').style.display='none'; $('bReveal').style.display='';
+  resetRec($('bRec'),$('bPlay'),'🎙 Record');
+  speak(d.q);                      // the panelist asks the question out loud
   bLeft=90; paintT();
   clearInterval(bT);
   bT=setInterval(()=>{ bLeft--; paintT(); if(bLeft<=0){ clearInterval(bT); bossReveal(); } },1000);
 }
 function paintT(){ const t=$('bTimer'); t.textContent=bLeft+'s'; t.style.color=bLeft<=15?'var(--gold)':'var(--navy)'; }
-function bossReveal(){ clearInterval(bT); $('bReveal').style.display='none'; $('bAnswer').style.display=''; }
+function bossReveal(){ clearInterval(bT); $('bReveal').style.display='none'; $('bAnswer').style.display=''; renderKeys($('bKeys'),bQs[bIdx],null); }
 $('bReveal').onclick=bossReveal;
+$('bSpeak').onclick=()=>speak(DATA[bQs[bIdx]].q);
+$('bRec').onclick=()=>toggleRec($('bRec'),$('bPlay'));
 $('bNail').onclick=()=>{ bScoreN++; S.xp+=50; studied(); save(); bossNext(); };
 $('bMiss').onclick=()=>{ S.tricky[bQs[bIdx]]=true; studied(); save(); bossNext(); };
 function bossNext(){ bIdx++; if(bIdx>=5) return bossEnd(); bossRound(); }
@@ -945,8 +1052,8 @@ function bossEnd(){
   if(pass)award('boss'); if(bScoreN===5)award('perfect'); save();
   if(pass)confetti(bScoreN===5?160:110);
 }
-$('bBack').onclick=()=>{ clearInterval(bT); renderMenu(); show('menu'); };
-$('bHome').onclick=()=>{ renderMenu(); show('menu'); };
+$('bBack').onclick=()=>{ clearInterval(bT); if('speechSynthesis' in window)speechSynthesis.cancel(); renderMenu(); show('menu'); };
+$('bHome').onclick=()=>{ if('speechSynthesis' in window)speechSynthesis.cancel(); renderMenu(); show('menu'); };
 $('bAgainBtn').onclick=()=>{ bQs=shuffle(DATA.map((d,i)=>i)).slice(0,5); bIdx=0; bScoreN=0; bossRound(); };
 
 /* ---------- badges + make-it-yours ---------- */
