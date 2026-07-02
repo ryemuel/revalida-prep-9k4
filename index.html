@@ -112,6 +112,14 @@
   .sgbox p{font-size:13px; color:var(--muted); margin-top:5px; line-height:1.5}
   .sgbox textarea{width:100%; min-height:110px; margin-top:13px; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px; color:var(--ink); resize:vertical; outline-color:var(--sky)}
   .sgrow{display:flex; gap:10px; margin-top:13px}
+  .sgadd{margin-top:11px; width:100%; background:var(--sky-wash); color:var(--sky); border:1.5px dashed var(--sky); border-radius:12px; padding:11px 14px; font-size:14px; font-weight:700; cursor:pointer}
+  .sgadd:active{transform:scale(.98)}
+  .sgchips{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+  .sgchips:empty{display:none}
+  .sgchip{display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-size:12.5px; font-weight:600; color:var(--ink)}
+  .sgchip img{width:26px; height:26px; border-radius:6px; object-fit:cover}
+  .sgchip .nm{max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .sgchip button{background:none; border:none; color:var(--muted); font-weight:800; cursor:pointer; font-size:14px; padding:0 2px}
 
   /* ---------- confetti ---------- */
   .confetti{position:fixed; top:-14px; width:9px; height:13px; z-index:120; border-radius:2px; pointer-events:none; will-change:transform,opacity}
@@ -389,8 +397,11 @@
   <div class="overlay" id="suggest">
     <div class="sgbox">
       <h3>Suggestion box ✎</h3>
-      <p>A question to add, a better wording, anything — it goes straight to R.</p>
+      <p>A question to add, a better wording, a photo of a handout — anything. It goes straight to R.</p>
       <textarea id="sgText" placeholder="Type it here, love…"></textarea>
+      <input type="file" id="sgFile" accept="image/*,video/*,.pdf,.doc,.docx,.txt" multiple style="display:none">
+      <button class="sgadd" id="sgAdd">＋ Add photo or file</button>
+      <div class="sgchips" id="sgChips"></div>
       <div class="sgrow">
         <button class="act again" id="sgCancel" style="flex:1">Cancel</button>
         <button class="act got" id="sgSend" style="flex:1">Send to R</button>
@@ -705,13 +716,34 @@ $('srcBtn').onclick=()=>{ $('about').querySelector('.abody').scrollTop=0; show('
 $('aboutBack').onclick=()=>{ renderMenu(); show('menu'); };
 
 /* ---------- suggestion box ---------- */
+let sgFiles=[];
 $('suggestBtn').onclick=()=>{ $('suggest').classList.add('show'); $('sgText').focus(); };
 $('sgCancel').onclick=()=>$('suggest').classList.remove('show');
 $('suggest').onclick=e=>{ if(e.target===$('suggest')) $('suggest').classList.remove('show'); };
-$('sgSend').onclick=()=>{
-  const t=$('sgText').value.trim(); if(!t) return;
-  location.href='mailto:ryemuell@icloud.com?subject='+encodeURIComponent('Revalida app suggestion')+'&body='+encodeURIComponent(t);
-  $('suggest').classList.remove('show'); $('sgText').value='';
+$('sgAdd').onclick=()=>$('sgFile').click();
+$('sgFile').onchange=()=>{ sgFiles=[...sgFiles,...$('sgFile').files]; renderChips(); $('sgFile').value=''; };
+function renderChips(){
+  const c=$('sgChips'); c.innerHTML='';
+  sgFiles.forEach((f,i)=>{
+    const chip=document.createElement('div'); chip.className='sgchip';
+    if(f.type.startsWith('image/')){ const im=document.createElement('img'); im.src=URL.createObjectURL(f); chip.appendChild(im); }
+    const nm=document.createElement('span'); nm.className='nm'; nm.textContent=f.name; chip.appendChild(nm);
+    const x=document.createElement('button'); x.textContent='✕'; x.onclick=()=>{ sgFiles.splice(i,1); renderChips(); }; chip.appendChild(x);
+    c.appendChild(chip);
+  });
+}
+function sgReset(){ $('suggest').classList.remove('show'); $('sgText').value=''; sgFiles=[]; renderChips(); }
+$('sgSend').onclick=async()=>{
+  const t=$('sgText').value.trim(); if(!t && !sgFiles.length) return;
+  const text='Revalida app suggestion — for R (ryemuell@icloud.com):\n\n'+(t||'(see attachment)');
+  if(sgFiles.length && navigator.canShare && navigator.canShare({files:sgFiles})){
+    try{ await navigator.share({files:sgFiles, text}); sgReset(); return; }
+    catch(e){ if(e && e.name==='AbortError') return;
+      try{ await navigator.share({files:sgFiles}); sgReset(); return; }catch(e2){} }
+  }
+  // fallback: pre-addressed mail (text only — attach the file in Mail if one was added)
+  location.href='mailto:ryemuell@icloud.com?subject='+encodeURIComponent('Revalida app suggestion')+'&body='+encodeURIComponent(t+(sgFiles.length?'\n\n(P.S. attach the photo/file here in Mail — this device could not share it directly.)':''));
+  sgReset();
 };
 
 /* ---------- keyboard ---------- */

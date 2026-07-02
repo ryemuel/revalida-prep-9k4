@@ -1,5 +1,5 @@
 /* offline cache so the app works with no internet after first load */
-const CACHE = 'revalida-v10';
+const CACHE = 'revalida-v11';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './icon-180.png'];
 
 self.addEventListener('install', e => {
