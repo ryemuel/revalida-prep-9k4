@@ -54,6 +54,7 @@
     #menu .top{grid-column:1; grid-row:1}
     #menu .titleblock{grid-column:1; grid-row:2}
     #menu .congrats{grid-column:1; grid-row:3}
+    #menu .game{grid-column:1; grid-row:4; align-self:start}
     #menu .spacer{display:none}
     #menu .nav{grid-column:2; grid-row:1 / -1; align-self:center; margin:0; gap:clamp(6px,1.4vw,12px)}
     #menu .nav button{font-size:clamp(25px,3.3vw,33px)}
@@ -103,6 +104,28 @@
   .corner{position:absolute; top:calc(env(safe-area-inset-top) + clamp(20px,5vw,40px)); right:clamp(20px,6vw,52px); display:flex; gap:8px; z-index:6}
   .corner-btn{width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--muted); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1}
   .corner-btn:active{transform:scale(.92)}
+
+  /* ---------- game layer ---------- */
+  .game{margin-top:clamp(14px,4vw,20px); display:flex; flex-direction:column; gap:10px}
+  .grow1{display:flex; align-items:baseline; justify-content:space-between}
+  .flame{font-size:clamp(20px,5.5vw,26px); font-weight:800; color:var(--gold); letter-spacing:-.02em}
+  .gm{font-size:clamp(12px,3.4vw,14px); font-weight:700; color:var(--muted)}
+  .gplay{width:100%}
+  .gsec{display:flex; gap:10px}
+  .gboss{flex:1; display:flex; justify-content:space-between; align-items:center; background:var(--sky-wash); border:none; border-radius:13px; padding:13px 16px; font-size:14.5px; font-weight:800; color:var(--navy); cursor:pointer}
+  .gboss .meta2{font-size:11.5px; color:var(--sky); font-weight:700}
+  .gbadges{background:#fff; border:1px solid var(--line); border-radius:13px; padding:13px 14px; font-size:14px; font-weight:800; color:var(--navy); cursor:pointer}
+  .quest{background:var(--gold-wash); border:none; border-radius:13px; padding:12px 14px; font-size:13px; font-weight:700; color:#7a5c1e; cursor:pointer; text-align:left}
+  .mine{margin-top:12px; background:var(--gold-wash); border-left:3px solid var(--gold); border-radius:10px; padding:12px 14px; font-size:.95em; line-height:1.55}
+  .bdesc{font-size:clamp(14px,3.9vw,16px); line-height:1.6; color:#3a4a60; margin-top:12px; max-width:46ch}
+  .btimer{font-size:clamp(42px,11vw,58px); font-weight:800; letter-spacing:-.03em; color:var(--navy); margin:clamp(12px,3vw,20px) 0 4px}
+  .bgrid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; max-height:52vh; overflow-y:auto}
+  .bcell{background:var(--sky-wash); border-radius:12px; padding:12px; text-align:center}
+  .bcell.locked{opacity:.35; filter:grayscale(1)}
+  .bic{font-size:24px}
+  .bnm{font-size:12.5px; font-weight:800; color:var(--navy); margin-top:5px}
+  .bds{font-size:10.5px; color:var(--muted); margin-top:2px; line-height:1.35}
+  .ylabel{display:block; font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--sky); margin:13px 0 -6px}
 
   /* ---------- suggestion box ---------- */
   .overlay{position:fixed; inset:0; background:rgba(4,54,115,.28); display:none; align-items:center; justify-content:center; z-index:150; padding:24px}
@@ -263,8 +286,8 @@
       <div class="steps">
         <div class="step"><div class="sn">1</div><div class="st"><b>Flip a card.</b> Tap any question to reveal the answer plus a quick “how to answer” tip.</div></div>
         <div class="step"><div class="sn">2</div><div class="st"><b>Mark it.</b> Tap <b>Got it</b> when you can say it confidently, or <b>One more look</b> to revisit — your rank fills up as you go.</div></div>
-        <div class="step"><div class="sn">3</div><div class="st"><b>Quiz me.</b> Shuffles everything so you can test yourself and build a streak.</div></div>
-        <div class="step"><div class="sn">4</div><div class="st"><b>Panel-day tips.</b> How to speak and carry yourself in front of the panel.</div></div>
+        <div class="step"><div class="sn">3</div><div class="st"><b>Play Today's 5.</b> Five quick cards a day keeps your 🔥 streak alive — that's the daily game.</div></div>
+        <div class="step"><div class="sn">4</div><div class="st"><b>Panel Simulation.</b> The boss round — 90 seconds a question, answered out loud. Pass 4 of 5, earn the badge.</div></div>
       </div>
       <button class="act got wstart" id="wStart">Let’s start ›</button>
     </div>
@@ -297,6 +320,19 @@
     <div class="congrats" id="congrats">
       <h2 id="cgTitle">Hi, love ✦</h2>
       <p id="cgBody"></p>
+    </div>
+
+    <div class="game">
+      <div class="grow1">
+        <div class="flame" id="gFlame">🔥 0</div>
+        <div class="gm" id="gMission">Today's 5 · 0/5</div>
+      </div>
+      <button class="act got gplay" id="gPlay">Play Today's 5 ›</button>
+      <div class="gsec">
+        <button class="gboss" id="gBoss">🎤 Panel Simulation <span class="meta2" id="gBossBest"></span></button>
+        <button class="gbadges" id="gBadges">🏅 <span id="gBadgeN">0/10</span></button>
+      </div>
+      <button class="quest" id="questBtn">💛 Quest: make it yours — add your 2 real answers</button>
     </div>
 
     <div class="spacer"></div>
@@ -392,6 +428,69 @@
       <button class="act next" id="sHome" style="flex:1">Home</button>
     </div>
   </section>
+
+  <!-- ======= BOSS: PANEL SIMULATION ======= -->
+  <section id="boss" class="screen">
+    <div class="deck-top">
+      <button class="pill" id="bBack">‹ back</button>
+      <div class="counter">panel simulation</div>
+    </div>
+    <div class="cardbody">
+      <div id="bIntro">
+        <div class="qlabel">boss round 🎤</div>
+        <div class="q">Panel<br>Simulation</div>
+        <p class="bdesc">Five random questions. 90 seconds each. Answer OUT LOUD — like the panel is right in front of you — then check yourself honestly. Pass 4 of 5 to earn the badge. Misses join your tricky pile.</p>
+        <button class="act got" id="bStart" style="margin-top:22px; width:100%">Start ›</button>
+      </div>
+      <div id="bRound" style="display:none">
+        <div class="qlabel" id="bTag">…</div>
+        <div class="q" id="bQ">…</div>
+        <div class="btimer" id="bTimer">90s</div>
+        <button class="revealbtn" id="bReveal" style="margin-top:8px">Show answer ↓</button>
+        <div id="bAnswer" style="display:none">
+          <div class="a" id="bA"></div>
+          <div class="actions" style="margin-top:16px">
+            <button class="act again" id="bMiss">Missed it</button>
+            <button class="act got" id="bNail">Nailed it ✓</button>
+          </div>
+        </div>
+      </div>
+      <div id="bResult" style="display:none; text-align:center">
+        <div class="big" id="bScore" style="font-size:clamp(60px,16vw,84px); font-weight:800; color:var(--gold); letter-spacing:-.04em">4/5</div>
+        <h2 id="bVerdict" style="font-size:clamp(24px,6.5vw,34px); font-weight:800; color:var(--navy); letter-spacing:-.03em; margin-top:8px">…</h2>
+        <p class="bdesc" id="bMsg" style="margin-left:auto; margin-right:auto"></p>
+        <div class="actions" style="margin-top:22px">
+          <button class="act again" id="bAgainBtn">Run it again</button>
+          <button class="act next" id="bHome">Home</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ======= BADGES ======= -->
+  <div class="overlay" id="badges">
+    <div class="sgbox">
+      <h3>Badges 🏅</h3>
+      <div class="bgrid" id="bGrid"></div>
+      <button class="act next" id="bgClose" style="width:100%; margin-top:14px">Close</button>
+    </div>
+  </div>
+
+  <!-- ======= MAKE IT YOURS ======= -->
+  <div class="overlay" id="yours">
+    <div class="sgbox">
+      <h3>Make it yours 💛</h3>
+      <p>These two answers land best in your own words — panels can tell a real story from a borrowed one.</p>
+      <label class="ylabel" for="yStory">Your real "difficult client" story (situation → what you did → result)</label>
+      <textarea id="yStory" placeholder="e.g. A client was upset because…"></textarea>
+      <label class="ylabel" for="yWhy">Your real "Why BDO / why CRO" line</label>
+      <textarea id="yWhy" placeholder="What genuinely drew you here…"></textarea>
+      <div class="sgrow">
+        <button class="act again" id="yCancel" style="flex:1">Later</button>
+        <button class="act got" id="ySave" style="flex:1">Save 💛</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ======= SUGGESTION BOX ======= -->
   <div class="overlay" id="suggest">
@@ -564,8 +663,48 @@ const NAV=[
 
 /* ---------- state ---------- */
 const KEY="revalida_v3";
-let S=JSON.parse(localStorage.getItem(KEY)||"null")||{mastered:{},best:0,xp:0,cg:1};
+let S=Object.assign({mastered:{},best:0,xp:0,tricky:{},dayStreak:0,lastDay:'',todayCount:0,todayDate:'',badges:{},personal:{story:'',why:''},bossBest:0},JSON.parse(localStorage.getItem(KEY)||"{}"));
+S.tricky=S.tricky||{}; S.badges=S.badges||{}; S.personal=S.personal||{story:'',why:''};
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+function localDay(off=0){const d=new Date(Date.now()+off*864e5);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+/* ---------- game engine ---------- */
+const BADGES=[
+ {id:'first5',icon:'✦',name:'First Five',desc:'Finished your first Today’s 5'},
+ {id:'flame3',icon:'🔥',name:'3-Day Flame',desc:'Studied 3 days in a row'},
+ {id:'flame7',icon:'⚡',name:'7-Day Flame',desc:'Studied 7 days in a row'},
+ {id:'tech',icon:'🧠',name:'Technical Cleared',desc:'Mastered every technical card'},
+ {id:'handling',icon:'🤝',name:'Handling Cleared',desc:'Mastered every handling card'},
+ {id:'service',icon:'🛎️',name:'Service Cleared',desc:'Mastered every service card'},
+ {id:'yours',icon:'💛',name:'Make It Yours',desc:'Added your 2 real answers'},
+ {id:'boss',icon:'🎤',name:'Panel Survivor',desc:'Passed the Panel Simulation'},
+ {id:'perfect',icon:'💯',name:'Perfect Run',desc:'5/5 in the Panel Simulation'},
+ {id:'ready',icon:'✸',name:'Revalida Ready',desc:'Mastered all 23 cards'},
+];
+function award(id){ if(S.badges[id])return; S.badges[id]=true; save(); confetti(50); }
+function studied(){
+  const today=localDay();
+  if(S.todayDate!==today){S.todayDate=today;S.todayCount=0;}
+  S.todayCount++;
+  if(S.todayCount===5 && S.lastDay!==today){
+    S.dayStreak=(S.lastDay===localDay(-1))?S.dayStreak+1:1;
+    S.lastDay=today;
+    award('first5');
+    if(S.dayStreak>=3)award('flame3');
+    if(S.dayStreak>=7)award('flame7');
+    confetti(120);
+    whisper("today's 5 done — 🔥 day "+S.dayStreak+" secured");
+  }
+  save();
+}
+function catBadges(){
+  const all=c=>DATA.every((d,i)=>d.cat!==c||S.mastered[i]);
+  if(all('Technical'))award('tech');
+  if(all('Handling'))award('handling');
+  if(all('Service'))award('service');
+  if(mCount()===DATA.length)award('ready');
+}
 const $=id=>document.getElementById(id);
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));$(id).classList.add('show');}
 
@@ -583,10 +722,26 @@ function renderMenu(){
   $('mPct').textContent=Math.round(n/DATA.length*100)+'%';
   $('mMastered').textContent=n; $('mBest').textContent=S.best; $('mXP').textContent=S.xp;
   $('cgBody').textContent=CREATIVE.cheers[Math.floor(Math.random()*CREATIVE.cheers.length)];
+  /* game block */
+  const today=localDay(), yest=localDay(-1);
+  if(S.dayStreak>0 && S.lastDay && S.lastDay!==today && S.lastDay!==yest){S.dayStreak=0;save();}
+  if(S.todayDate!==today){S.todayDate=today;S.todayCount=0;save();}
+  const missionDone=S.lastDay===today;
+  $('gFlame').textContent='🔥 '+S.dayStreak;
+  $('gMission').textContent=missionDone?"Today's 5 · done ✓":"Today's 5 · "+Math.min(S.todayCount,5)+"/5";
+  $('gPlay').textContent=missionDone?'Free study ›':"Play Today's 5 ›";
+  $('gPlay').onclick=()=>start(missionDone?'all':'mission');
+  $('gBadgeN').textContent=Object.keys(S.badges).length+'/'+BADGES.length;
+  $('gBossBest').textContent=S.bossBest?('best '+S.bossBest+'/5'):'';
+  $('questBtn').textContent=S.badges.yours?'💛 Your two answers — tap to edit':'💛 Quest: make it yours — add your 2 real answers';
+  buildNav();
 }
 function buildNav(){
   const nav=$('nav'); nav.innerHTML='';
-  NAV.forEach(item=>{
+  const items=[...NAV];
+  const tn=Object.keys(S.tricky).length;
+  if(tn) items.splice(5,0,{mode:'tricky',label:'Tricky ones',meta:tn+' to clear · from your misses'});
+  items.forEach(item=>{
     const b=document.createElement('button');
     b.innerHTML=`${item.label}<span class="meta">${item.meta}</span>`;
     b.onclick=()=>{ item.mode==='panel'?openPanel():start(item.mode); };
@@ -600,6 +755,12 @@ function start(m){
   mode=m; isQuiz=(m==='quiz'); sessionGot=0; streak=0; advCount=0;
   let items=DATA.map((d,i)=>i);
   if(m==='Technical'||m==='Handling'||m==='Service') items=items.filter(i=>DATA[i].cat===m);
+  if(m==='tricky'){ items=Object.keys(S.tricky).map(Number); if(!items.length){renderMenu();show('menu');return;} }
+  if(m==='mission'){
+    const tk=shuffle(Object.keys(S.tricky).map(Number)).slice(0,2);
+    const pool=shuffle(DATA.map((d,i)=>i).filter(i=>!tk.includes(i)));
+    items=tk.concat(pool.slice(0,5-tk.length));
+  }
   items=shuffle(items);            // always shuffle, every mode, every time
   deck=items; pos=0; show('deck'); renderCard();
 }
@@ -612,6 +773,8 @@ function renderCard(){
   $('dLabel').textContent=d.tag;
   $('dQ').innerHTML=d.q;
   $('dA').innerHTML=d.a; $('dTip').textContent=d.tip;
+  if(S.personal.story && d.tag==='HEAT · STAR') $('dA').innerHTML+='<div class="mine"><b>Your story:</b> '+esc(S.personal.story)+'</div>';
+  if(S.personal.why && d.tag==="Your 'why'") $('dA').innerHTML+='<div class="mine"><b>Your why:</b> '+esc(S.personal.why)+'</div>';
   $('dWrap').classList.remove('flipped');
   $('dActions').style.display='none';
   $('dPrev').disabled=pos===0;
@@ -632,13 +795,15 @@ function paintStreak(){const c=$('dStreak');c.textContent='streak '+streak;c.cla
 $('dGot').onclick=()=>{
   const idx=deck[pos], before=rankInfo(mCount()).level;
   if(!S.mastered[idx]){S.mastered[idx]=true;S.xp+=100;}
-  streak++; sessionGot++; if(streak>S.best)S.best=streak; save();
+  delete S.tricky[idx];
+  streak++; sessionGot++; if(streak>S.best)S.best=streak;
+  studied(); catBadges(); save();
   confetti(16);
   const after=rankInfo(mCount()).level;
   if(after>before) rankUp(after);
   advance();
 };
-$('dAgain').onclick=()=>{streak=0;save();advance();};
+$('dAgain').onclick=()=>{ S.tricky[deck[pos]]=true; streak=0; studied(); save(); advance(); };
 $('dNext').onclick=advance;
 $('dPrev').onclick=()=>{if(pos>0){pos--;renderCard();}};
 $('dBack').onclick=()=>{renderMenu();show('menu');};
@@ -693,7 +858,8 @@ function finish(){
   $('sGot').textContent=sessionGot+'/'+deck.length;
   $('sStreak').textContent=S.best;
   const n=mCount();
-  if(n===DATA.length){$('sTitle').textContent='Ready ✦';}
+  if(mode==='mission'){$('sTitle').textContent="Today's 5 — done 🔥";}
+  else if(n===DATA.length){$('sTitle').textContent='Ready ✦';}
   else if(pct>=80){$('sTitle').textContent='Strong run';}
   else if(pct>=50){$('sTitle').textContent='Good progress';}
   else {$('sTitle').textContent='Keep going';}
@@ -744,6 +910,65 @@ $('sgSend').onclick=async()=>{
   // fallback: pre-addressed mail (text only — attach the file in Mail if one was added)
   location.href='mailto:ryemuell@icloud.com?subject='+encodeURIComponent('Revalida app suggestion')+'&body='+encodeURIComponent(t+(sgFiles.length?'\n\n(P.S. attach the photo/file here in Mail — this device could not share it directly.)':''));
   sgReset();
+};
+
+/* ---------- boss: panel simulation ---------- */
+let bQs=[],bIdx=0,bScoreN=0,bT=null,bLeft=90;
+function bossOpen(){ clearInterval(bT); $('bIntro').style.display=''; $('bRound').style.display='none'; $('bResult').style.display='none'; show('boss'); }
+$('gBoss').onclick=bossOpen;
+$('bStart').onclick=()=>{ bQs=shuffle(DATA.map((d,i)=>i)).slice(0,5); bIdx=0; bScoreN=0; bossRound(); };
+function bossRound(){
+  $('bIntro').style.display='none'; $('bResult').style.display='none'; $('bRound').style.display='';
+  const d=DATA[bQs[bIdx]];
+  $('bTag').textContent=(bIdx+1)+' of 5 · '+d.tag;
+  $('bQ').innerHTML=d.q; $('bA').innerHTML=d.a;
+  $('bAnswer').style.display='none'; $('bReveal').style.display='';
+  bLeft=90; paintT();
+  clearInterval(bT);
+  bT=setInterval(()=>{ bLeft--; paintT(); if(bLeft<=0){ clearInterval(bT); bossReveal(); } },1000);
+}
+function paintT(){ const t=$('bTimer'); t.textContent=bLeft+'s'; t.style.color=bLeft<=15?'var(--gold)':'var(--navy)'; }
+function bossReveal(){ clearInterval(bT); $('bReveal').style.display='none'; $('bAnswer').style.display=''; }
+$('bReveal').onclick=bossReveal;
+$('bNail').onclick=()=>{ bScoreN++; S.xp+=50; studied(); save(); bossNext(); };
+$('bMiss').onclick=()=>{ S.tricky[bQs[bIdx]]=true; studied(); save(); bossNext(); };
+function bossNext(){ bIdx++; if(bIdx>=5) return bossEnd(); bossRound(); }
+function bossEnd(){
+  clearInterval(bT); $('bRound').style.display='none'; $('bResult').style.display='';
+  $('bScore').textContent=bScoreN+'/5';
+  const pass=bScoreN>=4;
+  $('bVerdict').textContent=pass?(bScoreN===5?'Perfect run ✦':'Panel passed ✦'):'Not yet — run it back';
+  $('bMsg').textContent=pass
+    ? "That's exactly how it will feel in the room. This part, you're ready for."
+    : "Every officer bombs a mock round first. Your misses just joined the tricky pile — clear them, then run it back.";
+  if(bScoreN>S.bossBest)S.bossBest=bScoreN;
+  if(pass)award('boss'); if(bScoreN===5)award('perfect'); save();
+  if(pass)confetti(bScoreN===5?160:110);
+}
+$('bBack').onclick=()=>{ clearInterval(bT); renderMenu(); show('menu'); };
+$('bHome').onclick=()=>{ renderMenu(); show('menu'); };
+$('bAgainBtn').onclick=()=>{ bQs=shuffle(DATA.map((d,i)=>i)).slice(0,5); bIdx=0; bScoreN=0; bossRound(); };
+
+/* ---------- badges + make-it-yours ---------- */
+$('gBadges').onclick=()=>{
+  const g=$('bGrid'); g.innerHTML='';
+  BADGES.forEach(b=>{
+    const el=document.createElement('div');
+    el.className='bcell'+(S.badges[b.id]?'':' locked');
+    el.innerHTML=`<div class="bic">${b.icon}</div><div class="bnm">${b.name}</div><div class="bds">${b.desc}</div>`;
+    g.appendChild(el);
+  });
+  $('badges').classList.add('show');
+};
+$('bgClose').onclick=()=>$('badges').classList.remove('show');
+$('badges').onclick=e=>{ if(e.target===$('badges'))$('badges').classList.remove('show'); };
+$('questBtn').onclick=()=>{ $('yStory').value=S.personal.story||''; $('yWhy').value=S.personal.why||''; $('yours').classList.add('show'); };
+$('yCancel').onclick=()=>$('yours').classList.remove('show');
+$('yours').onclick=e=>{ if(e.target===$('yours'))$('yours').classList.remove('show'); };
+$('ySave').onclick=()=>{
+  S.personal.story=$('yStory').value.trim(); S.personal.why=$('yWhy').value.trim();
+  if(S.personal.story && S.personal.why) award('yours');
+  save(); $('yours').classList.remove('show'); renderMenu();
 };
 
 /* ---------- keyboard ---------- */
