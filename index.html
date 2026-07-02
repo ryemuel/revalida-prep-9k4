@@ -104,6 +104,15 @@
   .corner-btn{width:34px; height:34px; border-radius:10px; border:1px solid var(--line); background:#fff; color:var(--muted); font-size:16px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; line-height:1}
   .corner-btn:active{transform:scale(.92)}
 
+  /* ---------- suggestion box ---------- */
+  .overlay{position:fixed; inset:0; background:rgba(4,54,115,.28); display:none; align-items:center; justify-content:center; z-index:150; padding:24px}
+  .overlay.show{display:flex}
+  .sgbox{background:#fff; border-radius:18px; padding:22px; width:100%; max-width:420px; box-shadow:0 18px 50px rgba(4,54,115,.25)}
+  .sgbox h3{font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--navy)}
+  .sgbox p{font-size:13px; color:var(--muted); margin-top:5px; line-height:1.5}
+  .sgbox textarea{width:100%; min-height:110px; margin-top:13px; border:1.5px solid var(--line); border-radius:12px; padding:12px; font:inherit; font-size:15px; color:var(--ink); resize:vertical; outline-color:var(--sky)}
+  .sgrow{display:flex; gap:10px; margin-top:13px}
+
   /* ---------- confetti ---------- */
   .confetti{position:fixed; top:-14px; width:9px; height:13px; z-index:120; border-radius:2px; pointer-events:none; will-change:transform,opacity}
   @keyframes drop{to{transform:translateY(112vh) rotate(680deg); opacity:0}}
@@ -266,6 +275,7 @@
     </div>
 
     <div class="corner">
+      <button class="corner-btn" id="suggestBtn" title="Suggestion box" aria-label="Suggestion box">&#9998;</button>
       <button class="corner-btn" id="srcBtn" title="About & source" aria-label="About and source">&#9432;</button>
       <button class="corner-btn" id="resetBtn" title="Reset progress" aria-label="Reset progress">&#8635;</button>
     </div>
@@ -353,9 +363,9 @@
     <div class="abody">
       <h2 class="ab-title">About &amp;<br>source</h2>
       <p>A personal study reviewer for the <b>BDO officership revalida</b> — the new-hire Client Relations Officer panel.</p>
-      <p><b>Where the content comes from:</b> your BDO CRO/CRA training handbook and the official revalida question sheets. The frameworks — <b>4As, LIFT, HEAT, SERVE</b> — are straight from that material.</p>
+      <p><b>Where the content comes from:</b> your BDO CRO/CRA training handbook, the official revalida question sheets, and the ODP supplemental pool (Marketing Officer) — cards carry their official codes (CT1_MO…CL3_MO) so you can call the code on the rating sheet. The frameworks — <b>4As, LIFT, HEAT, SERVE</b> — are straight from that material.</p>
       <p><b>Make them your own.</b> The answers are study aids, not a script — especially the “Why BDO?” and “difficult client” cards, those land best in your own words.</p>
-      <p class="meta-line">21 cards · built by R, for H ✦</p>
+      <p class="meta-line">23 cards · built by R, for H ✦</p>
     </div>
   </section>
 
@@ -375,6 +385,19 @@
     </div>
   </section>
 
+  <!-- ======= SUGGESTION BOX ======= -->
+  <div class="overlay" id="suggest">
+    <div class="sgbox">
+      <h3>Suggestion box ✎</h3>
+      <p>A question to add, a better wording, anything — it goes straight to R.</p>
+      <textarea id="sgText" placeholder="Type it here, love…"></textarea>
+      <div class="sgrow">
+        <button class="act again" id="sgCancel" style="flex:1">Cancel</button>
+        <button class="act got" id="sgSend" style="flex:1">Send to R</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -392,19 +415,22 @@ const DATA = [
  {cat:"Technical",tag:"Machines",q:"What distinguishes a UTM from a CDM, and how do both benefit customers and branches?",
   a:`It really comes down to scope — a <b>UTM</b> handles both withdrawals and deposits, while a CDM is deposit-only. Both give clients fast, round-the-clock service and pull traffic off the counter. That frees us up to engage and advise clients instead of doing routine over-the-counter work.`,
   tip:`The whole question hinges on one fact: UTM = withdraw + deposit, CDM = deposit only. State that crisply first, then the shared benefit (24/7, less counter traffic). Trap: getting it backwards or saying the CDM also withdraws.`},
- {cat:"Handling",tag:"LIFT · don't push",q:"A senior citizen client declines to use the Service Assist Machine. How do you handle it?",
+ {cat:"Handling",tag:"CL2_MO · LIFT",q:"A senior citizen client declines to use the Service Assist Machine. How do you handle it?",
   a:`If a senior client would rather not use the machine, I respect that fully — I never force digital on anyone. I serve them personally first, and only then gently offer to guide them through it side by side — something like "it only takes a couple of minutes, and I'll stay with you the whole way." They leave cared for today, and a little more open to trying it next time.`,
-  tip:`This tests empathy and the no-push principle (LIFT). Lead with "respect the choice, assist personally first," then offer the guided try. Trap: sounding like you'd pressure an elderly client into the machine to hit a target.`},
- {cat:"Handling",tag:"Reassure · escalate",q:"The CASA kiosk reverts to the landing page mid-encoding. What do you do?",
+  tip:`This tests empathy and the no-push principle (LIFT). Lead with "respect the choice, assist personally first," then offer the guided try. Trap: sounding like you'd pressure an elderly client into the machine to hit a target. Note: the MO sheet words this as "refuses to use the QMS machine" — same approach.`},
+ {cat:"Handling",tag:"CT3_MO · Reassure",q:"The CASA kiosk reverts to the landing page mid-encoding. What do you do?",
   a:`If the kiosk jumps back to the landing page mid-transaction, I stay calm and reassure the client their details are safe. I restart it and re-encode together with them so they're not redoing it alone. If it keeps glitching, I raise it to <b>Channels Monitoring</b> as a system issue and offer the counter so they're still served without delay.`,
   tip:`They want composure plus the right escalation path. Lead with "reassure data is safe, re-assist," then name Channels Monitoring and the counter fallback. Trap: leaving the client to figure it out, or not knowing where to escalate.`},
+ {cat:"Handling",tag:"CT4_MO · OTP",q:"A client doesn't receive the OTP from the CASA kiosk and can't proceed with their account application. What do you do?",
+  a:`My first move is to reassure the client — this happens, and it's usually a quick fix — then confirm with them that the mobile number was entered correctly. From there I have them tap resend on the kiosk and we give it a short moment, since telco signal can delay the message. If it still won't come through, I don't let the application stall; I continue it with an officer or at the counter, and I flag <b>Channels Monitoring</b> if it looks like a system issue. One thing never changes — the OTP stays with the client, and they key it in themselves.`,
+  tip:`This is an OTP-security check dressed as a service scenario — lead with reassure, verify the number, resend, then the officer/counter fallback so the application still proceeds. Trap: never offer to receive or read the OTP for them — the client keys it in, full stop.`},
  {cat:"Handling",tag:"Refer-first",q:"A client requests a feature that is not feasible. How do you keep the relationship positive?",
   a:`I make it a rule never to give a flat no — that closes down both the conversation and the relationship. Instead I acknowledge what they're after, am honest about what's possible right now, and offer the closest alternative or point them to the right officer or our Branch Head. They walk away informed and still feeling helped, even when the exact request can't happen.`,
   tip:`This is about turning a "no" into a positive, plus knowing when to refer. Lead with "never a flat no — acknowledge, alternative, refer." Trap: over-promising the impossible, or shutting the client down with a bare no.`},
- {cat:"Handling",tag:"Fallback · escalate",q:"A client can't withdraw via QR code or biometrics at the branch ATM. How do you handle it?",
+ {cat:"Handling",tag:"CT2_MO · Fallback",q:"A client can't withdraw via QR code or biometrics at the branch ATM. How do you handle it?",
   a:`If a client can't withdraw by QR or biometrics at the ATM, I reassure them and we run through the basics together. So they're not held up, I give them an immediate fallback — their card or the counter. Then I log and escalate the QR/biometrics fault to <b>Channels Monitoring</b> so the real cause gets fixed.`,
   tip:`They're assessing problem-solving plus that you don't strand the client. Lead with the immediate fallback (card/OTC), then escalate to Channels Monitoring. Trap: focusing only on the fault report and forgetting the client still needs their cash now.`},
- {cat:"Handling",tag:"HEAT",q:"A client complains their queue ticket number was skipped. What do you do?",
+ {cat:"Handling",tag:"CL1_MO · HEAT",q:"A client complains their queue ticket number was skipped. What do you do?",
   a:`A skipped number is genuinely frustrating, so I run <b>HEAT</b>: I hear the client out, empathize that it's annoying, apologize, then act. I check the queue, give them the right priority, and serve them quickly. Staying calm and fair is what wins their trust back.`,
   tip:`Classic complaint-handling — they want a named de-escalation framework. Lead with HEAT and spell out the four steps. Trap: jumping straight to "I'd fix the queue" and skipping the acknowledgment (hear / empathize / apologize).`},
  {cat:"Technical",tag:"Mission",q:"What are the benefits of Digital Banking? Explain its importance in Client Relations.",
@@ -416,6 +442,9 @@ const DATA = [
  {cat:"Technical",tag:"Downtime",q:"What should be done if the SAM or the Teller's SAM app is offline?",
   a:`If SAM or the teller's SAM app goes down, I let the client know politely, apologize for the trouble, and right away offer another route — the counter or a working machine. At the same time I report the outage to support or <b>Channels Monitoring</b>, and I switch back to digital the moment it's up. My one rule is that the client never leaves unserved.`,
   tip:`They want graceful downtime handling plus the report step. Lead with "inform, apologize, offer alternative," name Channels Monitoring, and close with "never leaves unserved." Trap: only reporting the outage and not giving the client a way to transact now.`},
+ {cat:"Technical",tag:"CT1_MO · Downtime",q:"How should the CRO handle it when the QMS kiosks go offline at the branch?",
+  a:`The moment the QMS kiosks go offline, I shift the lobby to <b>manual queueing</b> and become the queue myself — greeting clients as they arrive, listing them in order, and pointing each one to the right counter. I keep everyone informed on the wait and make sure seniors, PWDs, and priority clients still get their lanes even without tickets. While managing the floor, I report the outage to Channels Monitoring, and we go back to digital as soon as it's restored. Either way, the line never stops moving.`,
+  tip:`The panel is checking whether service continues without the machine — lead with "I become the queue" (greet, list, direct) and name the senior/PWD priority lanes. Trap: answering "report it and wait for IT" — the manual system runs while the fix happens.`},
  {cat:"Technical",tag:"How-to",q:"If an account has a Bills Purchase (BP) line, how will the client encode it into SAM?",
   a:`For an account with a Bills Purchase line, I'd walk the client to the bills payment / BP option on <b>SAM</b>, pick the right biller or account, enter the amount and details, confirm, and save the reference number. I always guide them through it the first time so it feels familiar. The goal is that next visit they can do it on their own with confidence.`,
   tip:`A how-to question testing real machine familiarity. Walk the steps in order on SAM and end with "keep the reference + so they self-serve next time." Trap: being fuzzy on the sequence or forgetting the confirm / reference step.`},
@@ -431,9 +460,9 @@ const DATA = [
  {cat:"Handling",tag:"Trust-first",q:"How would you engage a client who is unreceptive to exploring the digital machines/kiosks?",
   a:`If a client clearly isn't interested in the machines, I don't push at all. I help them their own way first to earn a bit of trust, and once it's there I just plant a seed — one clear benefit and an offer to show them whenever they're ready. For me adoption follows trust, so I let it happen at their pace.`,
   tip:`Tests patience and the trust-first principle. Lead with "don't push, build trust first, plant one benefit." Trap: treating an unreceptive client as someone to win over today rather than someone whose pace you respect.`},
- {cat:"Handling",tag:"Priority client",q:"A Diamond (priority) cardholder won't encode bulk transactions in SAM. How do you handle it?",
+ {cat:"Handling",tag:"CL3_MO · Priority",q:"A Diamond (priority) cardholder won't encode bulk transactions in SAM. How do you handle it?",
   a:`With a Diamond cardholder I lead with discretion and speed, and I never force the machine. I assist them personally so it stays effortless, and if I bring up SAM at all, I tie it to their priority — bulk runs faster and they skip the floor next time. It's framed as a convenience for them, never a nudge for my numbers, because with a priority client the relationship comes first.`,
-  tip:`Tests judgment with a priority client — relationship over adoption metrics. Lead with "honor the premium relationship, assist personally," then a soft benefit-for-them offer. Trap: prioritizing the digital push over a high-value client's comfort.`},
+  tip:`Tests judgment with a priority client — relationship over adoption metrics. Lead with "honor the premium relationship, assist personally," then a soft benefit-for-them offer. Trap: prioritizing the digital push over a high-value client's comfort. Note: the MO sheet words this as "encode their bulk transactions in the QMS" — same approach.`},
  /* ---- bonus prep (added on QA advice) ---- */
  {cat:"Service",tag:"SERVE",q:"What is the S.E.R.V.E service standard, and how do you live it every day?",
   a:`<b>S.E.R.V.E</b> is how I show up for every client, every day. I <b>S</b>eek to understand by listening for the real need before I assume, <b>E</b>xplore the options before I conclude, <b>R</b>efer when I'm in doubt rather than guess or say no, <b>V</b>alidate the client so they feel they matter, and <b>E</b>xecute with care — clear, polite, and with a real solution. That's what stops me ever turning someone away at first touch.`,
@@ -514,7 +543,7 @@ const CREATIVE = {
 };
 
 const NAV=[
- {mode:"all",label:"Study everything",meta:"all 21 cards · flip to learn"},
+ {mode:"all",label:"Study everything",meta:"all 23 cards · flip to learn"},
  {mode:"Technical",label:"The hard ones",meta:"machines, digital & the why"},
  {mode:"Handling",label:"Procedures & handling",meta:"the tricky client moments"},
  {mode:"Service",label:"Service & you",meta:"SERVE, security & your 'why'"},
@@ -530,7 +559,7 @@ const $=id=>document.getElementById(id);
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));$(id).classList.add('show');}
 
 function mCount(){return Object.values(S.mastered).filter(Boolean).length;}
-const THRESH=[0,4,9,14,18,21];
+const THRESH=[0,4,9,14,19,23];
 function rankInfo(n){let lvl=1;for(let i=0;i<THRESH.length;i++){if(n>=THRESH[i])lvl=i+1;}return{level:lvl,name:CREATIVE.ranks[lvl-1]};}
 
 let mode=null,deck=[],pos=0,flipped=false,streak=0,sessionGot=0,isQuiz=false,advCount=0;
@@ -674,6 +703,16 @@ $('resetBtn').onclick=()=>{
 };
 $('srcBtn').onclick=()=>{ $('about').querySelector('.abody').scrollTop=0; show('about'); };
 $('aboutBack').onclick=()=>{ renderMenu(); show('menu'); };
+
+/* ---------- suggestion box ---------- */
+$('suggestBtn').onclick=()=>{ $('suggest').classList.add('show'); $('sgText').focus(); };
+$('sgCancel').onclick=()=>$('suggest').classList.remove('show');
+$('suggest').onclick=e=>{ if(e.target===$('suggest')) $('suggest').classList.remove('show'); };
+$('sgSend').onclick=()=>{
+  const t=$('sgText').value.trim(); if(!t) return;
+  location.href='mailto:prince@yoshilabs.io?subject='+encodeURIComponent('Revalida app suggestion')+'&body='+encodeURIComponent(t);
+  $('suggest').classList.remove('show'); $('sgText').value='';
+};
 
 /* ---------- keyboard ---------- */
 document.addEventListener('keydown',e=>{
